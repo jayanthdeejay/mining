@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/hex"
 	"fmt"
+	"time"
 )
 
 // For string of length n, you need MAX = n + 2
@@ -80,7 +82,10 @@ func DB(n uint16) {
 		i++
 	}
 	for {
-		fmt.Printf("%d", a[1])
+		// fmt.Printf("%d", a[1])
+		time.Sleep(time.Millisecond * 300)
+		fmt.Println(binaryToHex(a[1 : MAX-1]))
+		// fmt.Println(a[1 : MAX-1])
 		new_bit := Granddaddy(a, n)
 		i = 1
 		for i <= n {
@@ -91,8 +96,20 @@ func DB(n uint16) {
 		if Zeros(a, n) != 0 {
 			break
 		}
-		//fmt.Println(a)
 	}
+}
+
+func binaryToHex(a []uint16) string {
+	// Convert the binary digits into a byte array
+	b := make([]byte, (len(a)+7)/8)
+	for i, v := range a {
+		if v == 1 {
+			b[i/8] |= 1 << (7 - uint(i)%8)
+		}
+	}
+
+	// Convert the byte array into a hexadecimal string
+	return hex.EncodeToString(b)
 }
 
 // ===========================================
