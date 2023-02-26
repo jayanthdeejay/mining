@@ -1,122 +1,61 @@
 package main
 
 import (
-	"encoding/hex"
 	"fmt"
+
+	"github.com/jayanthdeejay/mining/producer/binhex"
+	"github.com/jayanthdeejay/mining/producer/necklace"
 )
 
 // For string of length n, you need MAX = n + 2
 // For 256 bit strings, set MAX = 258
 const MAX = 258
 
-// =====================
-// Test if a[1..n] = 0^n
-// =====================
-func Zeros(a [MAX]uint8, n uint16) bool {
-	var i uint16 = 1
-	for i <= n {
-		if a[i] == 1 {
-			return false
-		}
-		i++
-	}
-	return true
-}
-
-// =============================
-// Test if b[1..n] is a necklace
-// =============================
-func IsNecklace(b [MAX]uint8, n uint16) bool {
-	var p uint16 = 1
-	var i uint16 = 2
-	for i <= n {
-		if b[i-p] > b[i] {
-			return false
-		}
-		if b[i-p] < b[i] {
-			p = i
-		}
-		i++
-	}
-	return n%p == 0
-}
-
-// ===========================================
-// Necklace Successor Rules
-// ===========================================
-func Granddaddy(a [MAX]uint8, n uint16) uint8 {
-	var b [MAX]uint8
-	var j uint16 = 2
-	for j <= n && a[j] == 1 {
-		j++
-	}
-	var i uint16 = j
-	for i <= n {
-		b[i-j+1] = a[i]
-		i++
-	}
-	b[n-j+2] = 0
-	i = 2
-	for i < j {
-		b[n-j+i+1] = a[i]
-		i++
-	}
-	if IsNecklace(b, n) {
-		return 1 - a[1]
-	}
-	return a[1]
-}
-
 // =====================================================================
 // Generate de Bruijn sequences by iteratively applying a successor rule
 // =====================================================================
-func DB(n uint16) {
+func DB(n uint16, initial string) {
 	var a [MAX]uint8
 	var count = 0
 	var i uint16 = 1
-	for i <= n {
-		a[i] = 0 // First n bits
-		i++
+	if len(initial) == 0 {
+		for i <= n {
+			a[i] = 0 // First n bits
+			i++
+		}
+	} else {
+		a = binhex.HexToBinary(initial)
+		fmt.Println(initial, a)
 	}
 	for {
 		// fmt.Printf("%d", a[1])
 		if count == 1000000 {
-			fmt.Println(binaryToHex(a[1 : MAX-1]))
+			fmt.Println(binhex.BinaryToHex(a[1:MAX-1]), a)
 			count = 0
 		}
 		count++
 		// fmt.Println(a[1 : MAX-1])
-		new_bit := Granddaddy(a, n)
+		new_bit := necklace.Granddaddy(a, n)
 		i = 1
 		for i <= n {
 			a[i] = a[i+1]
 			i++
 		}
 		a[n] = new_bit
-		if Zeros(a, n) {
+		if necklace.Zeros(a, n) {
 			break
 		}
 	}
 }
 
-func binaryToHex(a []uint8) string {
-	// Convert the binary digits into a byte array
-	b := make([]byte, (len(a)+7)/8)
-	for i, v := range a {
-		if v == 1 {
-			b[i/8] |= 1 << (7 - uint(i)%8)
-		}
-	}
-
-	// Convert the byte array into a hexadecimal string
-	return hex.EncodeToString(b)
-}
-
 // ===========================================
 func main() {
 	var n uint16
-	fmt.Printf("Enter n: ")
-	fmt.Scanf("%d", &n)
-	DB(n)
+	initial := "8000000000000000000000000000000000000000000000000000000000003d09"
+	// initial := ""
+	// fmt.Printf("Enter n: ")
+	// fmt.Scanf("%d", &n)
+	n = 256
+	DB(n, initial)
 	fmt.Printf("\n\n")
 }
