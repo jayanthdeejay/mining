@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
-	"time"
 )
 
 // For string of length n, you need MAX = n + 2
@@ -13,43 +12,40 @@ const MAX = 258
 // =====================
 // Test if a[1..n] = 0^n
 // =====================
-func Zeros(a [MAX]uint16, n uint16) uint16 {
+func Zeros(a [MAX]uint8, n uint16) bool {
 	var i uint16 = 1
 	for i <= n {
 		if a[i] == 1 {
-			return 0
+			return false
 		}
 		i++
 	}
-	return 1
+	return true
 }
 
 // =============================
 // Test if b[1..n] is a necklace
 // =============================
-func IsNecklace(b [MAX]uint16, n uint16) uint16 {
+func IsNecklace(b [MAX]uint8, n uint16) bool {
 	var p uint16 = 1
 	var i uint16 = 2
 	for i <= n {
 		if b[i-p] > b[i] {
-			return 0
+			return false
 		}
 		if b[i-p] < b[i] {
 			p = i
 		}
 		i++
 	}
-	if n%p != 0 {
-		return 0
-	}
-	return 1
+	return n%p == 0
 }
 
 // ===========================================
 // Necklace Successor Rules
 // ===========================================
-func Granddaddy(a [MAX]uint16, n uint16) uint16 {
-	var b [MAX]uint16
+func Granddaddy(a [MAX]uint8, n uint16) uint8 {
+	var b [MAX]uint8
 	var j uint16 = 2
 	for j <= n && a[j] == 1 {
 		j++
@@ -65,7 +61,7 @@ func Granddaddy(a [MAX]uint16, n uint16) uint16 {
 		b[n-j+i+1] = a[i]
 		i++
 	}
-	if IsNecklace(b, n) != 0 {
+	if IsNecklace(b, n) {
 		return 1 - a[1]
 	}
 	return a[1]
@@ -75,7 +71,8 @@ func Granddaddy(a [MAX]uint16, n uint16) uint16 {
 // Generate de Bruijn sequences by iteratively applying a successor rule
 // =====================================================================
 func DB(n uint16) {
-	var a [MAX]uint16
+	var a [MAX]uint8
+	var count = 0
 	var i uint16 = 1
 	for i <= n {
 		a[i] = 0 // First n bits
@@ -83,8 +80,11 @@ func DB(n uint16) {
 	}
 	for {
 		// fmt.Printf("%d", a[1])
-		time.Sleep(time.Millisecond * 300)
-		fmt.Println(binaryToHex(a[1 : MAX-1]))
+		if count == 1000000 {
+			fmt.Println(binaryToHex(a[1 : MAX-1]))
+			count = 0
+		}
+		count++
 		// fmt.Println(a[1 : MAX-1])
 		new_bit := Granddaddy(a, n)
 		i = 1
@@ -93,13 +93,13 @@ func DB(n uint16) {
 			i++
 		}
 		a[n] = new_bit
-		if Zeros(a, n) != 0 {
+		if Zeros(a, n) {
 			break
 		}
 	}
 }
 
-func binaryToHex(a []uint16) string {
+func binaryToHex(a []uint8) string {
 	// Convert the binary digits into a byte array
 	b := make([]byte, (len(a)+7)/8)
 	for i, v := range a {
