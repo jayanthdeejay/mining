@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jayanthdeejay/mining/config/config"
+	"github.com/jayanthdeejay/mining/config"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
