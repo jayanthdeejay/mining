@@ -1,17 +1,19 @@
 package rabbitmq
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/jayanthdeejay/mining/config"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-func BunnyCon() (*amqp.Channel, *amqp.Queue) {
+func BunnyOpen() (*amqp.Channel, *amqp.Queue, context.Context) {
 	// Read the config file
-	file, err := os.Open("config.json")
+	file, err := os.Open("rabbit.json")
 	if err != nil {
 		panic(err)
 	}
@@ -25,7 +27,7 @@ func BunnyCon() (*amqp.Channel, *amqp.Queue) {
 	}
 
 	// Create the connection to the RabbitMQ server
-	uriString := fmt.Sprintf("amqp://%s:%s@%s:%d/", config.RabbitUser, config.RabbitPwd, config.ProducerHost, config.RabbitPort)
+	uriString := fmt.Sprintf("amqp://%s:%s@%s:%s/", config.RabbitUser, config.RabbitPwd, config.RabbitHost, config.RabbitPort)
 	conn, err := amqp.Dial(uriString)
 	if err != nil {
 		panic(err)
@@ -52,5 +54,8 @@ func BunnyCon() (*amqp.Channel, *amqp.Queue) {
 		panic(err)
 	}
 
-	return ch, &queue
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	return ch, &queue, ctx
 }
