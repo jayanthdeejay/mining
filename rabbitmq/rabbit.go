@@ -13,7 +13,7 @@ import (
 
 func BunnyOpen() (*amqp.Channel, *amqp.Queue, context.Context) {
 	// Read the config file
-	file, err := os.Open("rabbit.json")
+	file, err := os.Open("../config/rabbit.json")
 	if err != nil {
 		panic(err)
 	}
@@ -32,14 +32,12 @@ func BunnyOpen() (*amqp.Channel, *amqp.Queue, context.Context) {
 	if err != nil {
 		panic(err)
 	}
-	defer conn.Close()
 
 	// Create a channel for sending and receiving messages
 	ch, err := conn.Channel()
 	if err != nil {
 		panic(err)
 	}
-	defer ch.Close()
 
 	// Declare a queue to which the generated keys will be sent
 	queue, err := ch.QueueDeclare(
@@ -54,8 +52,7 @@ func BunnyOpen() (*amqp.Channel, *amqp.Queue, context.Context) {
 		panic(err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
+	ctx, _ := context.WithTimeout(context.Background(), time.Second)
 
 	return ch, &queue, ctx
 }

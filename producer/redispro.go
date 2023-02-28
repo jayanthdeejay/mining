@@ -6,11 +6,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/jayanthdeejay/mining/producer/binhex"
 	"github.com/jayanthdeejay/mining/producer/necklace"
-	"github.com/jayanthdeejay/mining/rabbitmq"
 	"github.com/jayanthdeejay/mining/store"
-	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 // For string of length n, you need MAX = n + 2
@@ -19,16 +18,18 @@ const MAX = 258
 const KEYLEN uint16 = 256
 
 var (
-	ch      *amqp.Channel
-	queue   *amqp.Queue
+	rdb     *redis.Client
 	ctx     context.Context
 	db      *sql.DB
 	initial string
 )
 
 func init() {
+	rdb = redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+	})
+	ctx = context.Background()
 	db, initial = store.DbOpen()
-	ch, queue, ctx = rabbitmq.BunnyOpen()
 }
 
 // =====================================================================
@@ -37,26 +38,41 @@ func init() {
 func Produce() {
 	var a [MAX]uint8
 	var n = KEYLEN
-	var count uint32 = 0
+	var count = 0
 	var i uint16 = 1
 	a = binhex.HexToBinary(initial)
 	// fmt.Println(initial, a)
-	fmt.Println(queue.Name)
+	defer rdb.Close()
+	defer db.Close()
 	for {
 		pk := binhex.BinaryToHex(a[1 : MAX-1])
-		message := amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte(pk),
-		}
-		defer ch.Close()
-		time.Sleep(time.Nanosecond * 100)
-		if err := ch.PublishWithContext(ctx, "", queue.Name, false, false, message); err != nil {
+		err := rdb.RPush(ctx, "debruijn", pk).Err()
+		if err != nil {
 			panic(err)
 		}
+		
+		// Loop until the length of the list goes below 50000
+		for {
+			length, err := rdb.LLen(context.Background(), "debruijn").Result()
+			if err != nil {
+				panic(err)
+			}
+			if length > 100000 {
+				fmt.Println("Length of debruijn list:", length)
+			}
+			if length < 100000 {
+				break
+			}
 
+			// Sleep for 1 second before checking again
+			time.Sleep(5 * time.Second)
+		}
+
+		
 		// Save key to db once every million iterations
 		count++
 		if count == 1000000 {
+			fmt.Println(pk)
 			err := store.Save(db, pk)
 			if err != nil {
 				panic(err)
@@ -81,3 +97,4 @@ func Produce() {
 func main() {
 	Produce()
 }
+

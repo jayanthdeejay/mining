@@ -7,12 +7,13 @@ import (
 	"os"
 	"time"
 
+	_ "github.com/lib/pq"
 	"github.com/jayanthdeejay/mining/config"
 )
 
 func DbOpen() (*sql.DB, string) {
 	// Read the config file
-	file, err := os.Open("store.json")
+	file, err := os.Open("../config/store.json")
 	if err != nil {
 		panic(err)
 	}
@@ -40,7 +41,6 @@ func DbOpen() (*sql.DB, string) {
 		fmt.Println("Error opening database:", err)
 		panic(err)
 	}
-	defer db.Close()
 
 	row := db.QueryRow("SELECT pk FROM state ORDER BY timestamp DESC LIMIT 1")
 	initial := ""
