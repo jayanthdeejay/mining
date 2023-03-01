@@ -30,6 +30,7 @@ func init() {
 	})
 	ctx = context.Background()
 	db, initial = store.DbOpen()
+	fmt.Println(initial)
 }
 
 // =====================================================================
@@ -57,10 +58,10 @@ func Produce() {
 			if err != nil {
 				panic(err)
 			}
-			if length > 100000 {
+			if length > 500000 {
 				fmt.Println("Length of debruijn list:", length)
 			}
-			if length < 100000 {
+			if length < 500000 {
 				break
 			}
 
