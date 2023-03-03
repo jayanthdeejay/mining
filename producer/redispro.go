@@ -58,10 +58,10 @@ func Produce() {
 			if err != nil {
 				panic(err)
 			}
-			if length > 500000 {
+			if length > 900000 {
 				fmt.Println("Length of debruijn list:", length)
 			}
-			if length < 500000 {
+			if length < 900000 {
 				break
 			}
 
@@ -72,7 +72,7 @@ func Produce() {
 		
 		// Save key to db once every million iterations
 		count++
-		if count == 1000000 {
+		if count == 100000 {
 			fmt.Println(pk)
 			err := store.Save(db, pk)
 			if err != nil {

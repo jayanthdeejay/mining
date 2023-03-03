@@ -14,10 +14,10 @@ import (
 var db *sql.DB
 
 const (
-    host     = "172.18.0.2"
+    host     = "localhost"
     port     = 5432
     user     = "postgres"
-    password = "tRTH*%N9J4PiRynf"
+    password = ""
     dbname   = "nidhi"
 )
 
