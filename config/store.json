@@ -2,7 +2,7 @@
   "host": "localhost",
   "port": 5432,
   "user": "postgres",
-  "password": "",
+  "password": "SomeRandomePassword",
   "dbname": "nidhi",
   "sslmode": "disable"
 }

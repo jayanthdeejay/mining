@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"time"
+	//"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/jayanthdeejay/mining/producer/binhex"
@@ -66,13 +66,13 @@ func Produce() {
 			}
 
 			// Sleep for 1 second before checking again
-			time.Sleep(5 * time.Second)
+			//time.Sleep(10 * time.Millisecond)
 		}
 
 		
 		// Save key to db once every million iterations
 		count++
-		if count == 100000 {
+		if count == 1000000 {
 			fmt.Println(pk)
 			err := store.Save(db, pk)
 			if err != nil {
