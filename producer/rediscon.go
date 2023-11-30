@@ -6,19 +6,19 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/jayanthdeejay/mining/address"
 	_ "github.com/lib/pq"
-        "github.com/go-redis/redis/v8"
 )
 
 var db *sql.DB
 
 const (
-    host     = "172.18.0.2"
-    port     = 5432
-    user     = "postgres"
-    password = "tRTH*%N9J4PiRynf"
-    dbname   = "nidhi"
+	host     = "172.18.0.2"
+	port     = 5432
+	user     = "postgres"
+	password = "VeryLongPassword"
+	dbname   = "nidhi"
 )
 
 func init() {
@@ -32,7 +32,6 @@ func init() {
 		log.Fatal("DB unreachable:", err)
 	}
 }
-
 
 func main() {
 	// Connect to the Redis server
@@ -61,8 +60,6 @@ func main() {
 	}
 }
 
-
-
 func ProcessKey(key string) {
 	add := address.GetEthAddress(key)
 	Checkaddress(key, add)
@@ -83,7 +80,7 @@ func Checkaddress(key, add string) {
         SELECT EXISTS(SELECT 1 FROM ethereum WHERE address = $1)
                OR EXISTS(SELECT 1 FROM bitcoin WHERE address = $1)`, add)
 	err := row.Scan(&exists)
-	
+
 	if err != nil {
 		log.Fatalf("Failed to check if address exists: %v", err)
 	}

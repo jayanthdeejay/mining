@@ -1,6 +1,6 @@
 {
   "rabbit_user": "bunnyadmin",
-  "rabbit_pwd": "hwiGZrcNX8uXJueuVSeXHQcPX8CVDtfBNRyasLjceZXW9wxo",
+  "rabbit_pwd": "SomeVeryLongPassword",
   "rabbit_host": "localhost",
   "rabbit_port": "5672",
   "queue_name": "mining",
