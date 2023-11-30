@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"time"
+	//"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/jayanthdeejay/mining/producer/binhex"
@@ -58,15 +58,15 @@ func Produce() {
 			if err != nil {
 				panic(err)
 			}
-			if length > 500000 {
+			if length > 900000 {
 				fmt.Println("Length of debruijn list:", length)
 			}
-			if length < 500000 {
+			if length < 900000 {
 				break
 			}
 
 			// Sleep for 1 second before checking again
-			time.Sleep(5 * time.Second)
+			//time.Sleep(10 * time.Millisecond)
 		}
 
 		

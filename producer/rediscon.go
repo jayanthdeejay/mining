@@ -9,9 +9,12 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/jayanthdeejay/mining/address"
 	_ "github.com/lib/pq"
+    "github.com/go-redis/redis/v8"
 )
 
 var db *sql.DB
+var ctx context.Context
+var rdb *redis.Client
 
 const (
 	host     = "172.18.0.2"
@@ -31,17 +34,18 @@ func init() {
 	if err = db.Ping(); err != nil {
 		log.Fatal("DB unreachable:", err)
 	}
+	
+	// Connect to the Redis server
+    ctx = context.Background()
+
+    rdb = redis.NewClient(&redis.Options{
+        Addr:     "localhost:6379",
+        Password: "",
+        DB:       0,
+    })
 }
 
 func main() {
-	// Connect to the Redis server
-	ctx := context.Background()
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "",
-		DB:       0,
-	})
-
 	// Read messages from the mining channel
 	count := 0
 	for {
@@ -74,6 +78,27 @@ func ProcessKey(key string) {
 	Checkaddress(key, p2sh_add)
 }
 
+
+//func Checkaddress(key, add string) {
+//	var exists bool
+//	row := db.QueryRow(`
+//        SELECT EXISTS(SELECT 1 FROM ethereum WHERE address = $1)
+//               OR EXISTS(SELECT 1 FROM bitcoin WHERE address = $1)`, add)
+//	err := row.Scan(&exists)
+//	
+//	if err != nil {
+//		log.Fatalf("Failed to check if address exists: %v", err)
+//	}
+//
+//	if exists {
+//		_, err = db.Exec("INSERT INTO found (key, address) VALUES ($1, $2)", key, add)
+//		if err != nil {
+//			log.Fatalf("Failed to save key to database: %v", err)
+//		}
+//		fmt.Println("Key saved to database")
+//	}
+//}
+
 func Checkaddress(key, add string) {
 	var exists bool
 	row := db.QueryRow(`
@@ -85,11 +110,19 @@ func Checkaddress(key, add string) {
 		log.Fatalf("Failed to check if address exists: %v", err)
 	}
 
-	if exists {
-		_, err = db.Exec("INSERT INTO found (key, address) VALUES ($1, $2)", key, add)
-		if err != nil {
-			log.Fatalf("Failed to save key to database: %v", err)
-		}
-		fmt.Println("Key saved to database")
-	}
+
+
+func Checkaddress(key, add string) {
+    exists, err := rdb.SIsMember(ctx, "addresses", add).Result()
+    if err != nil {
+        log.Fatalf("Failed to check if address exists in bloomfilter: %v", err)
+    }
+
+    if exists {
+        _, err = db.Exec("INSERT INTO found (key, address) VALUES ($1, $2)", key, add)
+        if err != nil {
+            log.Fatalf("Failed to save key to database: %v", err)
+        }
+        fmt.Println("Key saved to database")
+    }
 }

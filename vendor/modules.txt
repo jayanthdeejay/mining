@@ -1,3 +1,6 @@
+# github.com/RedisBloom/redisbloom-go v1.0.0
+## explicit; go 1.12
+github.com/RedisBloom/redisbloom-go
 # github.com/btcsuite/btcd v0.23.4
 ## explicit; go 1.17
 github.com/btcsuite/btcd/chaincfg
@@ -39,6 +42,15 @@ github.com/ethereum/go-ethereum/crypto/secp256k1/libsecp256k1/src
 github.com/ethereum/go-ethereum/crypto/secp256k1/libsecp256k1/src/modules/recovery
 github.com/ethereum/go-ethereum/rlp
 github.com/ethereum/go-ethereum/rlp/internal/rlpstruct
+# github.com/go-redis/redis v6.15.9+incompatible
+## explicit
+github.com/go-redis/redis
+github.com/go-redis/redis/internal
+github.com/go-redis/redis/internal/consistenthash
+github.com/go-redis/redis/internal/hashtag
+github.com/go-redis/redis/internal/pool
+github.com/go-redis/redis/internal/proto
+github.com/go-redis/redis/internal/util
 # github.com/go-redis/redis/v8 v8.11.5
 ## explicit; go 1.17
 github.com/go-redis/redis/v8
@@ -49,6 +61,9 @@ github.com/go-redis/redis/v8/internal/pool
 github.com/go-redis/redis/v8/internal/proto
 github.com/go-redis/redis/v8/internal/rand
 github.com/go-redis/redis/v8/internal/util
+# github.com/gomodule/redigo v1.8.2
+## explicit; go 1.14
+github.com/gomodule/redigo/redis
 # github.com/lib/pq v1.10.7
 ## explicit; go 1.13
 github.com/lib/pq
