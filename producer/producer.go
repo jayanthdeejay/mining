@@ -1,36 +1,69 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/jayanthdeejay/mining/producer/binhex"
 	"github.com/jayanthdeejay/mining/producer/necklace"
+	"github.com/jayanthdeejay/mining/rabbitmq"
+	"github.com/jayanthdeejay/mining/store"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 // For string of length n, you need MAX = n + 2
 // For 256 bit strings, set MAX = 258
 const MAX = 258
-const KEYLEN = 256
+const KEYLEN uint16 = 256
+
+var (
+	ch      *amqp.Channel
+	queue   *amqp.Queue
+	ctx     context.Context
+	db      *sql.DB
+	initial string
+)
+
+func init() {
+	db, initial = store.DbOpen()
+	ch, queue, ctx = rabbitmq.BunnyOpen()
+}
 
 // =====================================================================
 // Generate de Bruijn sequences by iteratively applying a successor rule
 // =====================================================================
-func DB(n uint16, initial string) {
+func Produce() {
 	var a [MAX]uint8
+	var n = KEYLEN
+	var count uint32 = 0
 	var i uint16 = 1
-	if len(initial) == 0 {
-		for i <= n {
-			a[i] = 0 // First n bits
-			i++
-		}
-	} else {
-		a = binhex.HexToBinary(initial)
-		fmt.Println(initial, a)
-	}
+	a = binhex.HexToBinary(initial)
+	// fmt.Println(initial, a)
+	fmt.Println(queue.Name)
 	for {
-		// fmt.Printf("%d", a[1])
-		fmt.Println(binhex.BinaryToHex(a[1 : MAX-1]))
-		// fmt.Println(a[1 : MAX-1])
+		pk := binhex.BinaryToHex(a[1 : MAX-1])
+		message := amqp.Publishing{
+			ContentType: "text/plain",
+			Body:        []byte(pk),
+		}
+		defer ch.Close()
+		time.Sleep(time.Nanosecond * 100)
+		if err := ch.PublishWithContext(ctx, "", queue.Name, false, false, message); err != nil {
+			panic(err)
+		}
+
+		// Save key to db once every million iterations
+		count++
+		if count == 1000000 {
+			err := store.Save(db, pk)
+			if err != nil {
+				panic(err)
+			}
+			count = 0
+		}
+
 		new_bit := necklace.Granddaddy(a, n)
 		i = 1
 		for i <= n {
@@ -46,7 +79,5 @@ func DB(n uint16, initial string) {
 
 // ===========================================
 func main() {
-	initial := ""
-	DB(KEYLEN, initial)
-	fmt.Printf("\n\n")
+	Produce()
 }
